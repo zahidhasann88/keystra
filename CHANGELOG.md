@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] — 2026-11-02
+
+- Shorter README, with a demo GIF and full guides in `docs/`.
+
 ## [0.1.0] — 2026-11-02
 
 First release.
