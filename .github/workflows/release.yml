@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Publish to npm and create GitHub release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+
+      - name: Check that the tag, package.json and CHANGELOG agree
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$GITHUB_REF_NAME" = "v$VERSION" || { echo "::error::tag $GITHUB_REF_NAME does not match package version $VERSION"; exit 1; }
+          grep -q "^## \[$VERSION\] — [0-9]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no dated [$VERSION] section"; exit 1; }
+
+      - run: npm run test:browser
+
+      - name: Publish to npm
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "keystra@$VERSION" version > /dev/null 2>&1; then
+            echo "keystra@$VERSION is already on npm, skipping publish"
+          else
+            npm publish --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v heading="## [$VERSION]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

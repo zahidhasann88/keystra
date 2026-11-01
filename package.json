@@ -21,7 +21,13 @@
     "typescript"
   ],
   "license": "MIT",
-  "author": "Keystra contributors",
+  "author": "Zahid Hasan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zahidhasann88/keystra.git"
+  },
+  "homepage": "https://github.com/zahidhasann88/keystra#readme",
+  "bugs": "https://github.com/zahidhasann88/keystra/issues",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -112,8 +118,7 @@
     "node": ">=18"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",
