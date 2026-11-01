@@ -10,18 +10,16 @@ permissions:
 
 jobs:
   release:
-    name: Publish to npm and create GitHub release
+    name: Create GitHub release
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
-          registry-url: https://registry.npmjs.org
       - run: npm ci
 
       - name: Check that the tag, package.json and CHANGELOG agree
@@ -32,16 +30,7 @@ jobs:
 
       - run: npm run test:browser
 
-      - name: Publish to npm
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          if npm view "keystra@$VERSION" version > /dev/null 2>&1; then
-            echo "keystra@$VERSION is already on npm, skipping publish"
-          else
-            npm publish --provenance
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm run verify
 
       - name: Create GitHub release
         run: |
